@@ -10,6 +10,8 @@ from apps.main.forms import UserRegisterForm
 # ======================================================================================================================
 def login_view(request):
     if request.user.is_authenticated:
+        if request.user.role == "manager":
+            return redirect("manager:dashboard")
         return redirect("customer:dashboard")
 
     if request.method == "POST":

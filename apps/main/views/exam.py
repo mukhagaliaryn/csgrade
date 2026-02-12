@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import OuterRef, Exists, Prefetch, Subquery, IntegerField, Value, F, ExpressionWrapper, FloatField
 from django.db.models.aggregates import Avg, Count, Sum
 from django.db.models.functions import Coalesce, Cast, NullIf
@@ -10,8 +11,11 @@ from core.models import ExamAttempt, SectionAttempt, Exam, Section, Question, At
 
 # customer dashboard page
 # ======================================================================================================================
-@role_required("customer")
+@login_required
 def customer_dashboard_view(request):
+    if request.user.role == "manager":
+        return redirect("manager:dashboard")
+
     user = request.user
     recent_attempts = (
         ExamAttempt.objects
