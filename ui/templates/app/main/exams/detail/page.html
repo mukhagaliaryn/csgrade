@@ -1,0 +1,202 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}{{ exam.title }}{% endblock title %}
+
+{% block base_layout %}
+<div class="max-w-6xl mx-auto py-4 space-y-8">
+    <div class="bg-white rounded-2xl p-8 border border-border-200">
+        <div class="grid lg:flex items-start justify-between gap-4">
+            <div class="flex-1">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-2xl font-semibold">{{ exam.title }}</h2>
+                </div>
+
+                {% if exam.description %}
+                    <div class="text-muted mt-2">{{ exam.description|safe }}</div>
+                {% else %}
+                    <div class="text-muted mt-2">Сипаттама жоқ.</div>
+                {% endif %}
+
+                <div class="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
+                    <div class="bg-secondary-50 rounded-xl p-3">
+                        <div class="text-muted">ID</div>
+                        <div class="font-medium">{{ exam.id }}</div>
+                    </div>
+
+                    <div class="bg-secondary-50 rounded-xl p-3">
+                        <div class="text-muted">Секция саны</div>
+                        <div class="font-medium">{{ exam.section_count|default:"—" }}</div>
+                    </div>
+
+                    <div class="bg-secondary-50 rounded-xl p-3">
+                        <div class="text-muted">Сұрақтар саны</div>
+                        <div class="font-medium">{{ exam.question_count|default:"—" }}</div>
+                    </div>
+
+                    <div class="bg-secondary-50 rounded-xl p-3">
+                        <div class="text-muted">Ұзақтығы</div>
+                        <div class="font-medium">
+                            {% if exam.time_limit %}{{ exam.time_limit }} мин{% else %}—{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="bg-secondary-50 rounded-xl p-3">
+                        <div class="text-muted">Макс балл</div>
+                        <div class="font-medium">{{ exam.max_total_score|default:"—" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full lg:max-w-64 space-y-4">
+                <div class="flex justify-center items-center py-4 bg-secondary-100 rounded-xl">
+                    <svg class="w-6 h-6 text-muted" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                        height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
+                    </svg>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    {% if attempt %}
+                        <a
+                            href="{% url 'customer:attempt_detail' attempt.id %}"
+                            class="flex justify-center text-sm focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl px-5 py-2.5"
+                        >
+                            Тестілеуге кіру
+                        </a>
+                    {% else %}
+                        <form method="post" action="{% url 'customer:exam_start' exam.id %}">
+                            {% csrf_token %}
+                            <button
+                                type="submit"
+                                class="w-full flex justify-center text-sm focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl px-5 py-2.5"
+                            >
+                                Тестілеуді бастау
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <a 
+                        href="{% url 'customer:exams' %}"
+                        class="flex justify-center border border-border-200 text-sm focus:outline-none transition-all bg-white hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl px-5 py-2.5"
+                    >
+                        Артқа
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-8 border border-border-200">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold">Секциялар және сұрақтар</h2>
+            <div class="text-sm text-muted">
+                {{ exam.sections.count }} секция
+            </div>
+        </div>
+    
+        <div class="mt-4 space-y-3">
+            {% for sec in exam.sections.all %}
+                <details class="group border border-border-200 rounded-2xl overflow-hidden">
+                    <summary
+                        class="cursor-pointer list-none px-4 py-4 bg-secondary-50 hover:bg-secondary-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-xl bg-white border border-border-200 flex items-center justify-center text-sm font-semibold">
+                                {{ sec.order }}
+                            </div>
+        
+                            <div class="grid">
+                                <div class="font-medium">
+                                    {{ sec.get_section_type_display }}
+                                </div>
+                                {% if sec.questions.count %}
+                                    <div class="flex gap-1 items-center text-xs text-muted mt-0.5">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                            height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9.529 9.988a2.502 2.502 0 1 1 5 .191A2.441 2.441 0 0 1 12 12.582V14m-.01 3.008H12M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                        <span>{{ sec.questions.count }} сұрақ</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+        
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-2 py-1 rounded-full bg-white border border-border-200 text-muted">
+                                {{ sec.questions.count }} сұрақ
+                            </span>
+                            <svg class="w-5 h-5 text-muted transition-transform group-open:rotate-180" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </summary>
+        
+                    <div class="px-4 py-4 bg-white">
+                        {% if sec.material %}
+                            <div class="mb-4 p-3 rounded-xl bg-secondary-50 border border-border-200">
+                                <div class="text-sm">Материал</div>
+                                <div class="text-sm mt-1 line-clamp-3">
+                                    {{ sec.material.text|safe|default:"" }}
+                                </div>
+                                {% if sec.material.audio %}
+                                    <div class="flex gap-4 items-center bg-white p-4 rounded-2xl border border-border-200 max-w-md w-full">
+                                        <div class="flex p-2 rounded-full text-muted border border-border-200">
+                                            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                                height="24" fill="currentColor" viewBox="0 0 24 24">
+                                                <path fill-rule="evenodd" d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="h-2 rounded-xl bg-secondary-200 flex-1"></div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+        
+                        <div class="space-y-2">
+                            {% for q in sec.questions.all %}
+                                <div class="border border-border-200 rounded-xl p-3 hover:bg-secondary-50">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="grid gap-2">
+                                            <div class="text-sm font-medium flex gap-2 items-start">
+                                                {{ q.order }}. {{ q.prompt|default:"(Сұрақ мәтіні жоқ)"|truncatewords_html:15|safe }}
+                                            </div>
+                                            <div class="flex gap-2 text-xs text-muted">
+                                                <div class="border border-border-200 flex gap-1 items-center px-2 py-1 rounded-xl">
+                                                    <span>Түрі:</span>
+                                                    <span class="font-medium text-foreground">
+                                                        {{ q.get_question_type_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="border border-border-200 flex gap-1 items-center px-2 py-1 rounded-xl">
+                                                    {% if q.points %} • Балл: 
+                                                        <span class="font-medium text-foreground">{{ q.points }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="text-sm text-gray-500">
+                                    Бұл секцияда сұрақ жоқ.
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </details>
+            {% empty %}
+            <div class="text-muted">
+                Бұл тестте секция жоқ.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock base_layout %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block base %}
+<div class="min-h-screen flex justify-center items-center">
+    <div class="max-w-md space-y-4 w-full p-4">
+        <div class="flex justify-center">
+            <img src="{% static 'images/full-logo.svg' %}" alt="TestApp Logo" class="h-12 w-auto">
+        </div>
+
+        <div class="relative">
+            {% block auth_layout %}
+            {% endblock auth_layout %}
+        </div>
+    </div>
+</div>
+{% endblock base %}

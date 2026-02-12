@@ -1,0 +1,78 @@
+{% with qa=q.qa sa=q.speaking_answer rubric=q.speaking_rubric %}
+<div class="grid gap-4">
+    <!-- Негізгі кілттік сөздер -->
+    <div class="rounded-xl border border-border-200 p-4">
+        <div class="text-xs text-muted mb-2">
+            <span class="">Негізгі кілттік сөздер</span>
+            {% if rubric %}
+                <span class="text-[11px] text-gray-400">
+                    (әр сөзге: {{ rubric.point_per_keyword }} б., максимум: {{ rubric.max_points }} б.)
+                </span>
+            {% endif %}
+        </div>
+
+        {% if rubric and rubric.keywords %}
+            <div class="flex flex-wrap gap-2">
+                {% for kw in rubric.keywords %}
+                    <span class="text-xs px-2 py-1 rounded-full bg-secondary-100 text-secondary-700">
+                        {{ kw }}
+                    </span>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-sm text-muted">Кілттік сөздер көрсетілмеген.</div>
+        {% endif %}
+    </div>
+
+    <!-- Аудио -->
+    <div class="rounded-xl border border-border-200 p-4">
+        <div class="text-xs text-muted mb-2">Аудио</div>
+
+        {% if sa and sa.audio %}
+            <audio controls class="w-full">
+                <source src="{{ sa.audio.url }}">
+            </audio>
+        {% else %}
+            <div class="text-sm text-muted">Аудио табылмады.</div>
+        {% endif %}
+    </div>
+
+    <!-- Транскрипт -->
+    <div class="rounded-xl border border-border-200 p-4">
+        <div class="text-xs text-muted mb-2">Транскрипт</div>
+
+        {% if qa.answer_json and qa.answer_json.transcript %}
+            <div class="text-sm leading-relaxed whitespace-pre-wrap">
+                {{ qa.answer_json.transcript }}
+            </div>
+        {% elif sa and sa.transcript %}
+            {# егер модельде transcript сақталса (кей проектте бар) #}
+            <div class="text-sm leading-relaxed whitespace-pre-wrap">
+                {{ sa.transcript }}
+            </div>
+        {% else %}
+            <div class="text-sm text-muted">
+                Транскрипт жоқ (OpenAI key / transcribe қателігі болуы мүмкін).
+            </div>
+        {% endif %}
+    </div>
+
+    {# Табылған кілттік сөздер #}
+    <div class="rounded-xl border border-border-200 p-4">
+        <div class="text-xs text-muted mb-2">Тапсырушыдан табылған кілттік сөздер</div>
+
+        {% if qa.answer_json and qa.answer_json.matched_keywords %}
+            <div class="flex flex-wrap gap-2">
+                {% for kw in qa.answer_json.matched_keywords %}
+                    <span class="text-xs px-2 py-1 rounded-full bg-primary-50 text-primary-700 border border-primary-200">
+                        {{ kw }}
+                    </span>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-sm text-muted">Табылған кілттік сөздер жоқ.</div>
+        {% endif %}
+    </div>
+
+</div>
+{% endwith %}

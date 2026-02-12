@@ -1,0 +1,58 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="kk" data-theme="light">
+<head>
+    <title>{% block title %}{% endblock %} - CSgrade</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" href="{% static 'images/icon.png' %}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    {% tailwind_css %}
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+
+    <!-- Python керек болса -->
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/python/python.min.js"></script>
+</head>
+<body class="font-inter bg-white text-foreground text-sm">
+    {% if messages %}
+        {% for message in messages %}
+            <div
+				class="message-item fixed z-50 bottom-0 left-0 w-full bg-foreground flex justify-center items-center gap-2 px-4 py-2 text-white transition-all duration-500" 
+				role="alert"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+					stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+					class="lucide lucide-circle-alert-icon lucide-circle-alert {{ message.tags }}">
+					<circle cx="12" cy="12" r="10" />
+					<line x1="12" x2="12" y1="8" y2="12" />
+					<line x1="12" x2="12.01" y1="16" y2="16" />
+				</svg>
+                <span class="font-medium">
+                    {{ message }}
+                </span>
+            </div>
+
+			<script>
+				setTimeout(() => {
+					const messages = document.querySelectorAll('.message-item');
+					messages.forEach((msg) => {
+						msg.classList.add('translate-y-10', 'opacity-0');
+						setTimeout(() => msg.remove(), 1000);
+					});
+				}, 5000);
+			</script>
+        {% endfor %}
+    {% endif %}
+
+    {% block base %}
+    {% endblock base %}
+
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+</body>
+</html>

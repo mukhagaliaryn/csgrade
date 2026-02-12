@@ -1,0 +1,73 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Ашық тестілеулер{% endblock title %}
+
+{% block base_layout %}
+<div class="max-w-6xl mx-auto py-4 space-y-8">
+    <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-semibold">Ашық тестілеулер</h2>
+    </div>
+
+    {% if exams %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for exam in exams %}
+                <div class="grid gap-2 bg-white rounded-2xl border border-border-200 overflow-hidden hover:shadow-md transition">
+                    <div class="flex justify-center items-center py-8 bg-secondary-100">
+                        <svg class="w-12 h-12 text-muted" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
+                        </svg>
+                    </div>
+                    <div class="grid gap-3 p-4">
+                        <div class="relative">
+                            <h4 class="text-base font-semibold leading-snug">{{ exam.title }}</h4>
+                            <div class="mt-2 flex flex-wrap items-center gap-4 text-muted">
+                                <div class="inline-flex items-center gap-1">
+                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                        height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                                            d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5" />
+                                    </svg>
+                                    <span>{{ exam.section_count }} секция</span>
+                                </div>
+                            
+                                <div class="inline-flex items-center gap-2">
+                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                        height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9.529 9.988a2.502 2.502 0 1 1 5 .191A2.441 2.441 0 0 1 12 12.582V14m-.01 3.008H12M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                    <span>{{ exam.question_count }} сұрақ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <a 
+                                href="{% url 'customer:exam_detail' exam.id %}"
+                                class="flex justify-center border border-border-200 focus:outline-none transition-all bg-white hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl px-5 py-2.5"
+                            >
+                                Толығырақ
+                            </a>
+                            <form method="post" action="{% url 'customer:exam_start' exam.id %}">
+                                {% csrf_token %}
+                                <button 
+                                    type="submit"
+                                    class="w-full flex justify-center focus:outline-none transition-all text-white cursor-pointer font-medium rounded-xl px-5 py-2.5 bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300"
+                                >
+                                    {% if exam.is_registered %}Тестілеуге кіру{% else %}Тестілеуді бастау{% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="flex justify-center py-8">
+            <span class="text-muted">Әзірге тест жоқ.</span>
+        </div>
+    {% endif %}
+</div>
+{% endblock base_layout %}

@@ -1,0 +1,158 @@
+{% extends 'layouts/auth_layout.html' %}
+
+{% block title %}Тіркелу{% endblock title %}
+
+{% block auth_layout %}
+<div class="p-4 space-y-8">
+    <h2 class="text-2xl font-bold text-center">Тіркелу</h2>
+    <form method="post" class="grid gap-4">
+        {% csrf_token %}
+        <div class="grid gap-2">
+            <div class="relative">
+                <label for="iin" class="block mb-2 font-medium">
+                    ЖСН / ИИН
+                </label>
+                <input 
+                    type="text"
+                    id="iin"
+                    name="iin"
+                    class="block w-full py-2.5 px-4 border border-border-300 text-foreground text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    placeholder="XXXXXXXXXXXXX"
+                    maxlength="12"
+                    required 
+                />
+                {% if form.iin.errors %}
+                    {% for error in form.iin.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="relative">
+                <label for="username" class="block mb-2 font-medium">
+                    Пайдаланушының аты
+                </label>
+                <input 
+                    type="text"
+                    id="username"
+                    name="username"
+                    class="block w-full py-2.5 px-4 border border-border-300 text-foreground text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    placeholder="user.name" 
+                    required 
+                />
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="relative">
+                <label for="email" class="block mb-2 font-medium">
+                    Электронды пошта
+                </label>
+                <input 
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="block w-full py-2.5 px-4 border border-border-300 text-foreground text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    placeholder="example@example.com" 
+                    required 
+                />
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="relative">
+                <label for="first_name" class="block mb-2 font-medium">
+                    Есімі
+                </label>
+                <input 
+                    type="text"
+                    id="first_name"
+                    name="first_name"
+                    class="block w-full py-2.5 px-4 border border-border-300 text-foreground text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    required 
+                />
+                {% if form.first_name.errors %}
+                    {% for error in form.first_name.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="relative">
+                <label for="last_name" class="block mb-2 font-medium">
+                    Тегі
+                </label>
+                <input 
+                    type="text"
+                    id="last_name"
+                    name="last_name"
+                    class="block w-full py-2.5 px-4 border border-border-300 text-foreground text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    required 
+                />
+                {% if form.last_name.errors %}
+                    {% for error in form.last_name.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="relative">
+                <label for="password1" class="block mb-2 font-medium">
+                    Пароль
+                </label>
+                <input 
+                    type="password" 
+                    id="password1"
+                    name="password1"
+                    class="block w-full py-2.5 px-4 border border-border-300 text-foreground text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    required 
+                />
+                {% if form.password1.errors %}
+                    {% for error in form.password1.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="relative">
+                <label for="password2" class="block mb-2 font-medium">
+                    Парольді қайталау
+                </label>
+                <input 
+                    type="password" 
+                    id="password2"
+                    name="password2"
+                    class="block w-full py-2.5 px-4 border border-border-300 text-foreground text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    required 
+                />
+                {% if form.password2.errors %}
+                    {% for error in form.password2.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid gap-2">
+            <button 
+                type="submit"
+                class="font-medium rounded-xl px-4 py-2.5 cursor-pointer transition-all text-white bg-primary-600 hover:bg-primary-800 focus:outline-none focus:ring-3 focus:ring-primary-300"
+            >
+                Регистрация
+            </button>
+        </div>
+    </form>
+    <a 
+        href="{% url 'customer:login' %}"
+        class="w-full flex justify-center font-medium rounded-xl px-4 py-2 bg-white border border-border-300 transition-all focus:outline-none hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300"
+    >
+        Жүйеге кіру
+    </a>
+</div>
+{% endblock auth_layout %}

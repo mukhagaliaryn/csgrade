@@ -1,0 +1,37 @@
+{% extends 'layouts/base_layout.html' %}
+{% load static %}
+
+{% block base_layout %}
+<div class="grid md:flex items-start gap-8 py-6 px-4">
+    <ul class="max-w-64 w-full hidden md:grid gap-1">
+        <li>
+            <a href="{% url 'customer:account' %}" class="py-2 px-4 w-full block hover:bg-primary-100 rounded-xl {% if request.path == '/account/me/' %}bg-primary-600 hover:bg-primary-800 text-white{% endif %}">
+                Аккаунт
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'customer:settings' %}" class="py-2 px-4 w-full block hover:bg-primary-100 rounded-xl {% if request.path == '/account/settings/' %}bg-primary-600 hover:bg-primary-800 text-white{% endif %}">
+                Баптаулар
+            </a>
+        </li>
+    </ul>
+
+    <ul class="flex md:hidden w-full font-medium text-center">
+        <li class="whitespace-nowrap">
+            <a href="{% url 'customer:account' %}" class="p-2 border-b-4 {% if request.path == '/account/me/' %}border-b-4 border-primary-600{% else %}border-transparent{% endif %}">
+                Аккаунт
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'customer:settings' %}" class="p-2 border-b-4 {% if request.path == '/account/settings/' %}border-b-4 border-primary-600{% else %}border-transparent{% endif %}">
+                Баптаулар
+            </a>
+        </li>
+    </ul>
+
+    <div class="flex-1">
+        {% block account_layout %}
+        {% endblock account_layout %}
+    </div>
+</div>
+{% endblock base_layout %}

@@ -1,0 +1,36 @@
+{% load dict_extras %}
+
+{% with qa=qa_by_qid|get_item:q.id %}
+<form method="post" action="{% url 'customer:attempt_answer' attempt.id q.id %}">
+    {% csrf_token %}
+    <div class="space-y-2">
+        {% for opt in q.options.all %}
+            {% with selected_set=selected_map|get_item:qa.id %}
+                {% with is_selected=opt.id|in_set:selected_set %}
+                    {% with correct_set=correct_map|get_item:q.id %}
+                        {% with is_correct=opt.id|in_set:correct_set %}
+                            <label 
+                                class="
+                                    flex items-start gap-3 py-2.5 px-4 rounded-2xl border border-border-200 cursor-pointer
+                                    {% if mode == 'review' and is_correct %} bg-green-200 border-green-200 {% endif %}
+                                    {% if mode == 'review' and is_selected and not is_correct %} bg-red-200 border-red-200 {% endif %}
+                                "
+                            >
+                                <input 
+                                    type="radio" name="option" 
+                                    value="{{ opt.id }}"
+                                    {% if mode == "review" %}disabled{% endif %}
+                                    {% if is_selected %}checked{% endif %}
+                                    {% if readonly %}disabled{% endif %}
+                                    class="mt-1" 
+                                />
+                                <div class="text-sm">{{ opt.text|safe }}</div>
+                            </label>
+                        {% endwith %}
+                    {% endwith %}
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+</form>
+{% endwith %}

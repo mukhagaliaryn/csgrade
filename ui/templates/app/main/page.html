@@ -1,0 +1,199 @@
+{% extends "layouts/base_layout.html" %}
+{% load static %}
+
+{% block title %}Басты бет{% endblock title %}
+
+{% block base_layout %}
+<div class="max-w-6xl mx-auto py-4 space-y-8">
+
+    <div class="bg-white rounded-2xl border border-border-200 p-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-full overflow-hidden bg-secondary-100 flex items-center justify-center">
+                    {% if profile_user.avatar %}
+                        <img src="{{ profile_user.avatar.url }}" class="w-full h-full object-cover" alt="avatar">
+                    {% else %}
+                        <img src="{% static 'images/avatar.png' %}" class="w-full h-full object-cover" alt="avatar">
+                    {% endif %}
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-semibold">
+                        {{ profile_user.get_full_name|default:profile_user.username }}
+                    </h2>
+                    <div class="text-muted">
+                        {{ profile_user.email }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-secondary-100 rounded-2xl p-6">
+                <div class="text-muted">Жалпы орташа баға</div>
+                <div class="flex justify-center gap-1 items-center">
+                    <svg class="w-10 h-10 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                        height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                    </svg>
+                    <h1 class="text-4xl font-semibold">
+                        {% if overall_avg is not None %}
+                            {{ overall_avg|floatformat:0 }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </h1>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for s in section_progress %}
+                <div class="flex flex-col gap-4 border border-border-200 rounded-xl p-4">
+                    <div class="grid items-center justify-between">
+                        <div class="font-medium">{{ s.label }}</div>
+                        <div class="text-xs text-muted">
+                            Орташа нәтиже
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center">
+                        {% if s.avg is not None %}
+                            <div
+                                class="relative inline-flex items-center justify-center w-28 h-28"
+                                role="progressbar"
+                                aria-valuenow="{{ s.avg|floatformat:0 }}"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                style="--value: {{ s.avg|floatformat:0 }};"
+                            >
+                                <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+                                    <!-- Track -->
+                                    <circle
+                                        cx="50" cy="50" r="42"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="10"
+                                        class="text-secondary-100"
+                                    />
+                                    <!-- Progress -->
+                                    <circle
+                                        cx="50" cy="50" r="42"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="10"
+                                        stroke-linecap="round"
+                                        class="text-primary-600"
+                                        style="
+                                            stroke-dasharray: 264;
+                                            stroke-dashoffset: calc(264 - (264 * var(--value) / 100));
+                                        "
+                                    />
+                                </svg>
+                                <span class="absolute font-semibold text-primary-600 text-2xl">
+                                    {{ s.avg|floatformat:0 }}%
+                                </span>
+                            </div>
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Attempts -->
+    <div class="bg-white rounded-2xl border border-border-200 p-8">
+        <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold">Соңғы тапсырылған тесттер</h3>
+            <a href="#" class="text-muted hover:text-foreground">Барлығы</a>
+        </div>
+
+        <div class="mt-4 overflow-x-auto">
+            <table class="w-full">
+                <thead class="text-left border-b border-border-200">
+                    <tr>
+                        <th class="py-3 pl-4">Тест</th>
+                        <th class="py-3 pr-4">Статус</th>
+                        <th class="py-3 pr-4">Балл</th>
+                        <th class="py-3 pr-4">Басталды</th>
+                        <th class="py-3 pr-4">Аяқталды</th>
+                        <th class="py-3 pr-0"></th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y">
+                    {% for a in recent_attempts %}
+                        <tr class="hover:bg-secondary-50">
+                            <td class="py-3 pl-4">
+                                <div class="font-medium">{{ a.exam.title }}</div>
+                                <div class="text-xs text-muted">#{{ a.id }}-емтихан нәтижесі</div>
+                            </td>
+
+                            <td class="py-3 pr-4">
+                                <span class="
+                                    px-2 py-1 rounded-full text-xs font-medium
+                                    {% if a.status == 'in_progress' %}
+                                        bg-primary-100 text-primary-600 border border-primary-300
+                                    {% elif a.status == 'finished' %}
+                                        bg-green-100 text-green-600 border border-green-300
+                                    {% elif a.status == 'aborted' %}
+                                        bg-red-100 text-red-600 border border-red-300
+                                    {% endif %}
+                                    "
+                                >
+                                    {{ a.get_status_display }}
+                                </span>
+                            </td>
+
+                            <td class="py-3 pr-4 font-medium">
+                                {% if a.total_score is not None %}{{ a.total_score|floatformat:0 }}{% else %}—{% endif %}
+                            </td>
+
+                            <td class="py-3 pr-4 text-muted">
+                                {% if a.started_at %}{{ a.started_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}
+                            </td>
+
+                            <td class="py-3 pr-4 text-muted">
+                                {% if a.finished_at %}{{ a.finished_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}
+                            </td>
+
+                            <td class="py-3 pr-4 text-right space-x-2">
+                                <a 
+                                    href="{% url 'customer:exam_detail' a.exam.id %}" 
+                                    class="inline-flex justify-center focus:outline-none transition-all border border-border-200 hover:bg-primary-600 hover:text-white focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl p-2"
+                                >
+                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                        height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" />
+                                        <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+
+                                </a>
+                                <a 
+                                    href="{% url 'customer:attempt_detail' a.id %}" 
+                                    class="inline-flex justify-center focus:outline-none transition-all border border-border-200 hover:bg-primary-600 hover:text-white focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl p-2"
+                                >
+                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                        height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td class="py-6 text-muted text-center" colspan="5">
+                                Әзірге тапсырылған тест жоқ.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock base_layout %}

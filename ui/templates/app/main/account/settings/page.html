@@ -1,0 +1,107 @@
+{% extends 'layouts/account_layout.html' %}
+
+{% block title %}Баптаулар{% endblock title %}
+
+{% block account_layout %}
+<div class="w-full md:max-w-lg grid gap-8">
+    <div class="grid gap-4">
+        <div class="grid pb-4 border-b border-border-200">
+            <h2 class="text-2xl font-medium">Парольді өзгерту</h2>
+            <span class="text-muted">Қауіпсіздік үшін парольді өзгерту формасы</span>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="change_password" value="1">
+
+            <!-- old_password field -->
+            <div class="relative">
+                <label for="old_password" class="block mb-2 font-medium">
+                    Қазіргі пароль
+                </label>
+                <input 
+                    type="password" 
+                    id="old_password"
+                    name="old_password"
+                    class="block w-full py-2.5 px-4 bg-background border border-border-300 text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    required 
+                />
+                {% if form.old_password.errors %}
+                    {% for error in form.old_password.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- new_password1 field -->
+            <div class="relative">
+                <label for="new_password1" class="block mb-2 font-medium">
+                    Жаңа пароль
+                </label>
+                <input 
+                    type="password" 
+                    id="new_password1"
+                    name="new_password1"
+                    class="block w-full py-2.5 px-4 bg-background border border-border-300 text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    required 
+                />
+                {% if form.new_password1.errors %}
+                    {% for error in form.new_password1.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- new_password2 field -->
+            <div class="relative">
+                <label for="new_password2" class="block mb-2 font-medium">
+                    Жаңа пароль
+                </label>
+                <input 
+                    type="password" 
+                    id="new_password2"
+                    name="new_password2"
+                    class="block w-full py-2.5 px-4 bg-background border border-border-300 text-sm rounded-xl focus:ring-primary-600 focus:border-primary-600"
+                    required 
+                />
+                {% if form.new_password2.errors %}
+                    {% for error in form.new_password2.errors %}
+                        <p class="text-destructive">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- submit -->
+            <button 
+                type="submit" 
+                class="w-full md:w-auto font-medium rounded-xl px-4 py-2.5 text-white bg-primary-600 hover:bg-primary-800 cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary-300"
+            >
+                Құпиясөзді өзгерту
+            </button>
+        </form>
+    </div>
+
+    <!-- Delete account -->
+    <div class="grid gap-4">
+        <div class="grid pb-4 border-b border-border-200">
+            <h2 class="text-xl font-medium">Аккаунтты жою</h2>
+            <span class="text-muted">Жойылған аккаунтты кері қайтару мүмкін болмайды</span>
+        </div>
+
+        <form 
+            method="post" 
+            onsubmit="return confirm('Аккаунтты расымен жойғыңыз келе ме?')"
+            class="space-y-4"    
+        >
+            {% csrf_token %}
+            <input type="hidden" name="delete_account" value="1">
+            <button 
+                type="submit" 
+                class="w-full md:w-auto font-medium rounded-xl px-5 py-2.5 text-white bg-destructive hover:bg-red-700 cursor-pointer focus:outline-none focus:ring-4 focus:ring-red-300"
+            >
+                Аккаунтты жою
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock account_layout %}

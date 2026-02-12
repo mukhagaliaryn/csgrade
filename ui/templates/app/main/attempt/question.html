@@ -1,0 +1,191 @@
+{% extends "layouts/base_layout.html" %}
+{% load static %}
+
+{% block title %}{{ attempt.exam.title }}{% endblock title %}
+
+{% block base_layout %}
+<div class="max-w-6xl mx-auto py-4">
+
+    <div id="question-wrapper">
+        <div class="grid gap-4 justify-center">
+            <div id="question-header" class="flex gap-2 p-2 rounded-2xl w-full overflow-x-auto whitespace-nowrap">
+                {% for qq in flat_questions %}
+                    {% if qq.id == q.id %}
+                        <div class="w-8 h-8 flex items-center justify-center shrink-0 rounded-xl font-semibold border border-primary-600 bg-primary-200 text-primary-600">
+                            {{ forloop.counter }}
+                        </div>
+                    {% elif qq.id in answered_q_ids %}
+                        <div class="w-8 h-8 flex items-center justify-center shrink-0 rounded-xl border font-semibold border-primary-600 bg-primary-600 text-white">
+                            {{ forloop.counter }}
+                        </div>
+                    {% else %}
+                        <div class="w-8 h-8 flex items-center justify-center shrink-0 rounded-xl border border-border-200">
+                            {{ forloop.counter }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="grid gap-4 w-full max-w-4xl mx-auto">
+                <div id="section-material">
+                    {% if current_section and current_section.material %}
+                        <div class="border border-border-200 rounded-2xl p-4">
+                            <div class="text-lg font-semibold">
+                                {{ current_section.get_section_type_display }}
+                            </div>
+                
+                            {% if current_section.material.text %}
+                                <div class="mt-4 whitespace-pre-line">
+                                    {{ current_section.material.text|safe }}
+                                </div>
+                            {% endif %}
+                
+                            {% if current_section.material.audio %}
+                                <div class="mt-4">
+                                    <audio controls class="w-full">
+                                        <source src="{{ current_section.material.audio.url }}" />
+                                    </audio>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            
+                <div id="question-panel" class="grid gap-4 border border-border-200 rounded-2xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="font-medium text-muted">Сұрақ {{ q_index }} / {{ q_total }}</div>
+                        {% if saved %}
+                            <svg class="w-6 h-6 text-green-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd"
+                                    d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        {% endif %}
+                    </div>
+            
+                    <div class="flex gap-2 items-start text-base font-semibold">
+                        <span>{{ q.order }}.</span>
+                        <div>{{ q.prompt|safe }}</div>
+                    </div>
+            
+                    {% if q.question_type == "mcq_single" or q.question_type == "mcq_multi" %}
+                        <form 
+                            hx-post="{% url 'customer:attempt_answer' attempt.id q.id %}" 
+                            hx-target="#question-wrapper"
+                            hx-swap="outerHTML"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="next_qid" value="{{ next_q_id|default:'' }}">
+                
+                            {% include "app/main/attempt/partials/question_block.html" with q=q selected_set=selected_set qa=qa attempt=attempt %}
+                
+                            <div class="mt-4 flex items-center justify-between">
+                                {% if prev_q_id %}
+                                    <button 
+                                        type="button" 
+                                        hx-get="{% url 'customer:attempt_question' attempt.id %}?q={{ prev_q_id }}"
+                                        hx-target="#question-wrapper" 
+                                        hx-swap="outerHTML" 
+                                        hx-push-url="true"
+                                        class="flex justify-center border border-border-200 text-sm focus:outline-none transition-all cursor-pointer bg-white hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl px-5 py-2.5"
+                                    >
+                                        Артқа
+                                    </button>
+                                {% else %}
+                                    <button 
+                                        type="button" 
+                                        disabled 
+                                        class="flex justify-center border border-border-200 text-muted focus:outline-none transition-all bg-secondary-100 font-medium rounded-xl px-5 py-2.5 cursor-not-allowed"
+                                    >
+                                        Артқа
+                                    </button>
+                                {% endif %}
+                
+                                {% if next_q_id %}
+                                    <button 
+                                        type="submit" 
+                                        class="flex justify-center cursor-pointer focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl px-5 py-2.5"
+                                    >
+                                        Келесі
+                                    </button>
+                                {% else %}
+                                    <button 
+                                        type="button" 
+                                        disabled 
+                                        class="flex justify-center cursor-not-allowed focus:outline-none transition-all text-white bg-primary-600/50 font-medium rounded-xl px-5 py-2.5"
+                                    >
+                                        Келесі
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    {% else %}
+                        {% include "app/main/attempt/partials/question_block.html" with q=q selected_set=selected_set qa=qa attempt=attempt %}
+                        <div class="mt-4 flex items-center justify-between">
+                            {% if prev_q_id %}
+                                <button 
+                                    type="button" 
+                                    hx-get="{% url 'customer:attempt_question' attempt.id %}?q={{ prev_q_id }}"
+                                    hx-target="#question-wrapper" 
+                                    hx-swap="outerHTML" 
+                                    hx-push-url="true"
+                                    class="flex justify-center border border-border-200 text-sm focus:outline-none transition-all cursor-pointer bg-white hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl px-5 py-2.5"
+                                >
+                                    Артқа
+                                </button>
+                            {% else %}
+                                <button 
+                                    type="button" 
+                                    disabled 
+                                    class="flex justify-center border border-border-200 text-muted focus:outline-none transition-all bg-secondary-100 font-medium rounded-xl px-5 py-2.5 cursor-not-allowed"
+                                >
+                                    Артқа
+                                </button>
+                            {% endif %}
+                
+                            {% if next_q_id %}
+                                <button 
+                                    type="button" 
+                                    hx-get="{% url 'customer:attempt_question' attempt.id %}?q={{ next_q_id }}"
+                                    hx-target="#question-wrapper" 
+                                    hx-swap="outerHTML" 
+                                    hx-push-url="true"
+                                    class="flex justify-center cursor-pointer focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl px-5 py-2.5"
+                                >
+                                    Келесі
+                                </button>
+                            {% else %}
+                                <button 
+                                    type="button" 
+                                    disabled 
+                                    class="flex justify-center cursor-not-allowed focus:outline-none transition-all text-white bg-primary-600/50 font-medium rounded-xl px-5 py-2.5"
+                                >
+                                    Келесі
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+            
+                    {% if is_last %}
+                        <form 
+                            method="post" 
+                            action="{% url 'customer:attempt_submit' attempt.id %}" 
+                            class="flex justify-center"
+                        >
+                            {% csrf_token %}
+                            <button 
+                                type="submit" 
+                                class="flex justify-center cursor-pointer focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl px-5 py-2.5"
+                            >
+                                Тестті аяқтау
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock base_layout %}

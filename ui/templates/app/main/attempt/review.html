@@ -1,0 +1,212 @@
+{% extends "layouts/base_layout.html" %}
+{% load dict_extras %}
+
+{% block title %}#{{ attempt.id }}.{{ attempt.exam.title }} - нәтижесі{% endblock title %}
+
+{% block base_layout %}
+<div class="max-w-6xl mx-auto py-4">
+    <div class="grid lg:flex items-start gap-4 mb-8">
+        <div class="lg:max-w-64 text-center lg:text-start w-full grid gap-2">
+            <div class="flex justify-center items-center py-5 bg-secondary-100 rounded-xl">
+                <svg class="w-6 h-6 text-muted" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                    height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
+                </svg>
+            </div>
+            <h4 class="text-lg font-semibold">#{{ attempt.id }}.{{ attempt.exam.title }} - нәтижесі</h4>
+            <div class="flex justify-center lg:justify-start">
+                <div class="flex justify-center gap-1 px-2 py-1 rounded-xl bg-green-100 border border-green-300 text-green-600 text-xs font-medium">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                        height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                            d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span>{{ attempt.get_status_display }}</span>
+                </div>
+            </div>
+            <a 
+                href="{% url 'customer:dashboard' %}"
+                class="flex justify-center border border-border-200 text-sm focus:outline-none transition-all bg-white hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl px-5 py-2.5"
+            >
+                Басты бетке қайту
+            </a>
+        </div>
+
+        <div class="flex gap-2 overflow-x-auto whitespace-nowrap xl:grid xl:grid-cols-5">
+            {% widthratio attempt.total_score attempt.max_total_score 100 as total_percent %}
+            <div class="grid rounded-2xl p-4 border border-border-200 shrink-0">
+                <span class="text-xs text-muted">Жалпы нәтиже</span>
+
+                <h4 class="text-lg font-semibold">
+                    {{ attempt.total_score|floatformat:"0" }} / {{ attempt.max_total_score|floatformat:"0" }}
+                </h4>
+                <div
+                    class="relative inline-flex items-center justify-center w-24 h-24 mt-2"
+                    role="progressbar"
+                    aria-valuenow="{{ total_percent }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    style="--value: {{ total_percent }};"
+                >
+                    <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="10" class="text-secondary-100"/>
+                        <circle
+                            cx="50" cy="50" r="42"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="10"
+                            stroke-linecap="round"
+                            class="text-primary-600"
+                            style="stroke-dasharray: 264; stroke-dashoffset: calc(264 - (264 * var(--value) / 100));"
+                        />
+                    </svg>
+
+                    <span class="absolute font-semibold text-primary-600 text-lg">
+                        {{ total_percent }}%
+                    </span>
+                </div>
+            </div>
+
+            {% for sec in sections %}
+                {% if sec.review_max %}
+                    {% widthratio sec.review_score sec.review_max 100 as sec_percent %}
+                {% else %}
+                    {% with sec_percent=0 %}
+                    {% endwith %}
+                {% endif %}
+
+                <div class="grid p-4 rounded-2xl border border-border-200 shrink-0">
+                    <h6 class="text-xs text-muted line-clamp-1">{{ sec.get_section_type_display }}</h6>
+                    <div class="text-lg font-semibold">
+                        {{ sec.review_score|floatformat:"0" }} / {{ sec.review_max|floatformat:"0" }}
+                    </div>
+                    <div
+                        class="relative inline-flex items-center justify-center w-24 h-24 mt-2"
+                        role="progressbar"
+                        aria-valuenow="{{ sec_percent }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        style="--value: {{ sec_percent }};"
+                    >
+                        <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="10" class="text-secondary-100"/>
+                            <circle
+                                cx="50" cy="50" r="42"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="10"
+                                stroke-linecap="round"
+                                class="text-primary-600"
+                                style="stroke-dasharray: 264; stroke-dashoffset: calc(264 - (264 * var(--value) / 100));"
+                            />
+                        </svg>
+
+                        <span class="absolute font-semibold text-primary-600 text-lg">
+                            {{ sec_percent }}%
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div class="grid lg:flex items-start gap-4">
+        <div class="sticky top-16 z-10 lg:max-w-64 w-full bg-white">
+            <div class="space-y-2">
+                {% for s in sections %}
+                    <a 
+                        href="/attempts/{{ attempt.id }}/review/?section={{ s.id }}" 
+                        class="
+                            block px-4 py-2 rounded-xl border
+                            {% if current_section and current_section.id == s.id %}
+                                bg-primary-600 text-white border-primary-600
+                            {% else %}
+                                border-border-200 hover:bg-secondary-100
+                            {% endif %}
+                        "
+                    >
+                        <div class="flex items-center justify-between">
+                            <span>{{ s.get_section_type_display }}</span>
+                            <span class="text-xs opacity-80">({{ s.questions.count }})</span>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="flex-1 space-y-4">
+            {% if current_section %}
+                <div class="bg-white border border-border-200 rounded-2xl p-4">
+                    <h4 class="text-lg font-semibold">{{ current_section.get_section_type_display }}</h4>
+
+                    {% if current_section.material and current_section.material.text %}
+                        <div class="mt-4 whitespace-pre-line">{{ current_section.material.text|safe }}</div>
+                    {% endif %}
+                    
+                    {% if current_section.material and current_section.material.audio %}
+                        <div class="mt-4">
+                            <audio controls class="w-full">
+                                <source src="{{ current_section.material.audio.url }}">
+                            </audio>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="space-y-4">
+                    {% for q in current_section.questions.all %}
+                        <div class="border border-border-200 rounded-2xl p-4 bg-white">
+                            <div class="grid gap-3">
+                                <h5 class="flex gap-2 items-start font-semibold text-base">
+                                    <span>{{ q.order }}.</span>
+                                    <div>{{ q.prompt|safe }}</div>
+                                </h5>
+                                <div class="flex">
+                                    {% with qa=qa_by_qid|get_item:q.id %}
+                                        {% if qa %}
+                                            {% if mode == "review" %}
+                                                <div class="inline-flex gap-2 justify-center items-center px-4 py-2 rounded-2xl bg-secondary-100">
+                                                    <svg class="w-5 h-5 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                                        height="24" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path
+                                                            d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                                    </svg>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="font-medium">{{ qa.max_score|floatformat:"0" }}</span>
+                                                        <span class="block">/</span>
+                                                        <span class="font-medium">{{ qa.score|floatformat:"0" }}</span>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                {% if q.question_type == "mcq_single" %}
+                                    {% include "./partials/mcq_single.html" %}
+                                {% elif q.question_type == "mcq_multi" %}
+                                    {% include "./partials/mcq_multi.html" %}
+                                {% elif q.question_type == "speaking_keywords" %}
+                                    {% include "./partials/speaking_keywords.html" %}
+                                {% elif q.question_type == "writing" %}
+                                    {% include "./partials/writing.html" %}
+                                {% else %}
+                                    <div class="text-center text-muted">
+                                        Бұл сұрақ түрі кейін қосылады.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-muted">Бұл секцияда сұрақ жоқ.</div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-muted">Секция табылмады.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock base_layout %}

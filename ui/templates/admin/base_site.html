@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+
+{% block title %}{{ title }} | TestApp{% endblock %}
+
+
+{% block extrahead %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+    body {
+        font-family: "Roboto", sans-serif;
+    }
+
+    .login #container #header {
+        justify-content: center;
+    }
+
+    .login #container #header #branding {
+        text-align: center;
+    }
+
+    .preview {
+        max-width: 640px;
+        white-space: normal;
+        line-clamp: 1;
+    }
+</style>
+{% endblock %}
