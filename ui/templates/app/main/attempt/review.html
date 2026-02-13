@@ -1,5 +1,6 @@
 {% extends "layouts/base_layout.html" %}
 {% load dict_extras %}
+{% load static %}
 
 {% block title %}#{{ attempt.id }}.{{ attempt.exam.title }} - нәтижесі{% endblock title %}
 
@@ -7,12 +8,23 @@
 <div class="max-w-6xl mx-auto py-4">
     <div class="grid lg:flex items-start gap-4 mb-8">
         <div class="lg:max-w-64 text-center lg:text-start w-full grid gap-2">
-            <div class="flex justify-center items-center py-5 bg-secondary-100 rounded-xl">
-                <svg class="w-6 h-6 text-muted" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                    height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
-                </svg>
+            <div class="flex items-center gap-2 border border-border-200 rounded-2xl p-2 bg-white">
+                <div class="w-10 h-10 rounded-full overflow-hidden bg-secondary-100 flex items-center justify-center">
+                    {% if attempt.user.avatar %}
+                        <img src="{{ attempt.user.avatar.url }}" class="w-full h-full object-cover" alt="avatar">
+                    {% else %}
+                        <img src="{% static 'images/avatar.png' %}" class="w-full h-full object-cover" alt="avatar">
+                    {% endif %}
+                </div>
+
+                <div>
+                    <h5 class="text-base font-semibold line-clamp-1">
+                        {{ attempt.user.get_full_name|default:attempt.user.username }}
+                    </h5>
+                    <div class="text-muted text-xs">
+                        {{ attempt.user.email }}
+                    </div>
+                </div>
             </div>
             <h4 class="text-lg font-semibold">#{{ attempt.id }}.{{ attempt.exam.title }} - нәтижесі</h4>
             <div class="flex justify-center lg:justify-start">
@@ -110,7 +122,6 @@
                 </div>
             {% endfor %}
         </div>
-
     </div>
 
     <div class="grid lg:flex items-start gap-4">
@@ -118,7 +129,7 @@
             <div class="space-y-2">
                 {% for s in sections %}
                     <a 
-                        href="/attempts/{{ attempt.id }}/review/?section={{ s.id }}" 
+                        href="{% url review_url_name attempt.id %}?section={{ s.id }}" 
                         class="
                             block px-4 py-2 rounded-xl border
                             {% if current_section and current_section.id == s.id %}

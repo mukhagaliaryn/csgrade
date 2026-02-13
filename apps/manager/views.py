@@ -4,7 +4,10 @@ from django.core.paginator import Paginator
 from django.db.models import FloatField, Value, ExpressionWrapper, F, Avg, Q
 from django.db.models.functions import Cast, NullIf
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.views.decorators.http import require_GET
+
+from apps.main.services.review import _build_review_response
 from core.models import Exam, SectionAttempt, ExamAttempt
 from core.utils.decorators import role_required
 
@@ -135,3 +138,14 @@ def manager_dashboard_view(request):
         "page_obj": page_obj,
     }
     return render(request, "app/manager/page.html", context)
+
+
+
+@require_GET
+@role_required("manager")
+def manager_attempt_review_view(request, attempt_id: int):
+    attempt = get_object_or_404(
+        ExamAttempt.objects.select_related("user", "exam"),
+        pk=attempt_id
+    )
+    return _build_review_response(request, attempt, review_url_name="manager:attempt_review")
