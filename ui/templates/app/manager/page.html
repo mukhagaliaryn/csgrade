@@ -4,10 +4,355 @@
 
 
 {% block base_layout %}
-<div class="max-w-6xl mx-auto flex justify-center">
-    <div class="grid gap-2">
-        <h1 class="text-4xl font-medium">{{ user.username }}</h1>
-        <span class="text-muted">{{ user.email }}</span>
+<div class="max-w-6xl mx-auto py-4 space-y-8">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl border border-border-200 p-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="grid gap-1">
+                <h1 class="text-2xl font-semibold">Менеджер панелі</h1>
+                <div class="text-sm text-muted">
+                    Жалпы статистика және барлық тапсырылған емтихан нәтижелер тізімі.
+                </div>
+            </div>
+
+            <div class="flex">
+                <a 
+                    href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}export=csv" 
+                    class="flex gap-2 justify-center focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl px-5 py-2.5"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sheet-icon lucide-sheet">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                        <line x1="3" x2="21" y1="9" y2="9" />
+                        <line x1="3" x2="21" y1="15" y2="15" />
+                        <line x1="9" x2="9" y1="9" y2="21" />
+                        <line x1="15" x2="15" y1="9" y2="21" />
+                    </svg>
+                    <span>Экспорт</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="mt-6 flex gap-2 overflow-x-auto whitespace-nowrap">
+            <div class="flex flex-col gap-4 border border-border-200 rounded-xl p-4 shrink-0">
+                <div class="grid gap-1">
+                    <div class="font-medium">📊 Орташа пайыз</div>
+                    <div class="text-xs text-muted">Емтихан нәтижесі бойынша</div>
+                </div>
+
+                <div class="flex justify-center">
+                    {% if overall_avg is not None %}
+                        <div
+                            class="relative inline-flex items-center justify-center w-28 h-28"
+                            role="progressbar"
+                            aria-valuenow="{{ overall_avg|floatformat:0 }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            style="--value: {{ overall_avg|floatformat:0 }};"
+                        >
+                            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="10" class="text-secondary-100" />
+                                <circle
+                                    cx="50" cy="50" r="42"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="10"
+                                    stroke-linecap="round"
+                                    class="text-primary-600"
+                                    style="stroke-dasharray: 264; stroke-dashoffset: calc(264 - (264 * var(--value) / 100));"
+                                />
+                            </svg>
+                            <span class="absolute font-semibold text-primary-600 text-xl">
+                                {{ overall_avg|floatformat:0 }}%
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="text-sm text-muted">—</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% for s in section_progress %}
+                <div class="flex-1 flex flex-col gap-4 border border-border-200 rounded-xl p-4 shrink-0">
+                    <div class="grid gap-1">
+                        <div class="font-medium">
+                            {% if s.key == "listening" %}🎧{% elif s.key == "reading" %}📖{% elif s.key == "speaking" %}🗣{% elif s.key == "writing" %}✍{% endif %}
+                            {{ s.label }}
+                        </div>
+                        <div class="text-xs text-muted">Орташа нәтиже</div>
+                    </div>
+
+                    <div class="flex justify-center">
+                        {% if s.avg is not None %}
+                            <div
+                                class="relative inline-flex items-center justify-center w-28 h-28"
+                                role="progressbar"
+                                aria-valuenow="{{ s.avg|floatformat:0 }}"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                style="--value: {{ s.avg|floatformat:0 }};"
+                            >
+                                <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="10" class="text-secondary-100" />
+                                    <circle
+                                        cx="50" cy="50" r="42"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="10"
+                                        stroke-linecap="round"
+                                        class="text-primary-600"
+                                        style="stroke-dasharray: 264; stroke-dashoffset: calc(264 - (264 * var(--value) / 100));"
+                                    />
+                                </svg>
+                                <span class="absolute font-semibold text-primary-600 text-xl">
+                                    {{ s.avg|floatformat:0 }}%
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="text-sm text-muted">—</div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-200 p-8 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="grid gap-1">
+                <h2 class="text-xl font-semibold">Барлық тапсырушылар тізімі</h2>
+                <div class="text-muted">
+                    Фильтр/іздеу арқылы керек тапсырушы нәтижесін тез табасыз.
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="get" class="flex items-end justify-between gap-4">
+            <div class="flex gap-2 items-end">
+                <div class="relative">
+                    <label class="text-xs text-transparent">Статус</label>
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ request.GET.q }}"
+                        placeholder="Мысалы: Аты-жөні, email, ЖСН, т.б."
+                        class="mt-1 w-full rounded-xl text-sm border border-border-200 px-4 py-2.5 focus:ring-3 focus:ring-primary-300 focus:border-primary-600 outline-none"
+                    >
+                </div>
+
+                <div class="relative">
+                    <label class="text-xs text-muted">Емтихан</label>
+                    <select
+                        name="exam"
+                        class="mt-1 w-full text-sm rounded-xl border border-border-200 px-4 py-2.5 focus:ring-3 focus:ring-primary-300 focus:border-primary-600 outline-none bg-white"
+                    >
+                        <option value="">Барлығы</option>
+                        {% if exam_options %}
+                            {% for e in exam_options %}
+                                <option value="{{ e.id }}" {% if request.GET.exam == e.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ e.title }}
+                                </option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="relative">
+                    <label class="text-xs text-muted">Статус</label>
+                    <select
+                        name="status"
+                        class="mt-1 w-full rounded-xl text-sm border border-border-200 px-4 py-2.5 focus:ring-3 focus:ring-primary-300 focus:border-primary-600 outline-none bg-white"
+                    >
+                        <option value="">Барлығы</option>
+                        <option value="in_progress" {% if request.GET.status == "in_progress" %}selected{% endif %}>Орындалуда</option>
+                        <option value="finished" {% if request.GET.status == "finished" %}selected{% endif %}>Аяқталды</option>
+                        <option value="aborted" {% if request.GET.status == "aborted" %}selected{% endif %}>Тоқтатылды</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button
+                        type="submit"
+                        class="flex justify-center focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl p-2.5 cursor-pointer"
+                    >
+                        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                                d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+                        </svg>
+                    </button>
+
+                    <a
+                        href="?"
+                        class="flex justify-center text-muted border border-border-200 focus:outline-none transition-all bg-white hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl p-2.5"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-brush-cleaning-icon lucide-brush-cleaning">
+                            <path d="m16 22-1-4" />
+                            <path
+                                d="M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1" />
+                            <path d="M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z" />
+                            <path d="m8 22 1-4" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex gap-2 items-center text-muted">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                    height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                        d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+                </svg>
+                <span>Іздеу нәтиже: {% if attempts %}{{ attempts|length }}{% else %}0{% endif %}</span>
+            </div>
+        </form>
+
+        <div class="mt-6 overflow-x-auto">
+            <table class="w-full">
+                <thead class="text-left border-b border-border-200">
+                    <tr>
+                        <th class="py-3 pr-4 font-semibold">Тапсырушы</th>
+                        <th class="py-3 pr-4 font-semibold">Емтихан</th>
+                        <th class="py-3 pr-4 font-semibold">Статус</th>
+                        <th class="py-3 pr-4 font-semibold">Жалпы балл</th>
+                        <th class="py-3 pr-4 font-semibold">Басталды</th>
+                        <th class="py-3 pr-4 font-semibold">Аяқталды</th>
+                        <th class="py-3 pr-4 text-right font-semibold">Әрекеттер</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y">
+                    {% for a in attempts %}
+                        <tr class="hover:bg-secondary-50">
+                            <td class="py-3 pr-4">
+                                <div class="font-medium">
+                                    {{ a.user.get_full_name|default:a.user.username }}
+                                </div>
+                                <div class="text-xs text-muted">
+                                    @{{ a.user.username }}
+                                </div>
+                            </td>
+
+                            <td class="py-3 pr-4">
+                                <div class="font-medium">{{ a.exam.title }}</div>
+                                <div class="text-xs text-muted">
+                                    {% if a.exam_id %}#{{ a.exam_id }}{% endif %}
+                                </div>
+                            </td>
+
+                            <td class="py-3 pr-4">
+                                <span class="
+                                    px-2 py-1 rounded-full text-xs font-medium
+                                    {% if a.status == 'in_progress' %}
+                                        bg-primary-100 text-primary-600 border border-primary-300
+                                    {% elif a.status == 'finished' %}
+                                        bg-green-100 text-green-600 border border-green-300
+                                    {% elif a.status == 'aborted' %}
+                                        bg-red-100 text-red-600 border border-red-300
+                                    {% else %}
+                                        bg-secondary-100 text-muted border border-border-200
+                                    {% endif %}
+                                ">
+                                    {{ a.get_status_display }}
+                                </span>
+                            </td>
+
+                            <td class="py-3 pr-4 font-medium">
+                                {% if a.total_score is not None and a.max_total_score %}
+                                    {% widthratio a.total_score a.max_total_score 100 as p %}
+                                    {{ p }}%
+                                    <div class="text-xs text-muted">
+                                        {{ a.total_score|floatformat:0 }} / {{ a.max_total_score|floatformat:0 }}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="py-3 pr-4 text-muted">
+                                {% if a.started_at %}{{ a.started_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}
+                            </td>
+
+                            <td class="py-3 pr-4 text-muted">
+                                {% if a.finished_at %}{{ a.finished_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}
+                            </td>
+
+                            <td class="py-3 pr-4 text-right space-x-1">
+                                <a
+                                    href="#"
+                                    class="inline-flex justify-center focus:outline-none transition-all border border-border-200 hover:bg-primary-600 hover:text-white focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl p-2"
+                                    title="Толығырақ"
+                                >
+                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                         height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" />
+                                        <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                </a>
+                                <a
+                                    href="{% url 'admin:core_examattempt_change' a.id %}"
+                                    class="inline-flex justify-center focus:outline-none transition-all border border-border-200 hover:bg-primary-600 hover:text-white focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl p-2"
+                                    title="Өзгерту"
+                                    target="_blank"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-icon lucide-pencil">
+                                        <path
+                                            d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                                        <path d="m15 5 4 4" />
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="py-10 text-center text-muted">
+                                Нәтиже табылмады.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex items-center justify-center">
+            <div class="text-sm text-muted">
+                Барлығы: {{ page_obj.paginator.count }}
+            </div>
+            <div class="flex items-center gap-2">
+                {% if page_obj.has_previous %}
+                    <a 
+                        href="#" 
+                        class="flex justify-center border border-border-200 focus:outline-none transition-all bg-white hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl p-2.5"
+                    >
+                        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7" />
+                        </svg>
+                    </a>
+                {% endif %}
+
+                <span class="text-sm text-muted">
+                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a 
+                        href="#" 
+                        class="flex justify-center border border-border-200 focus:outline-none transition-all bg-white hover:bg-secondary-100 focus:ring-3 focus:ring-secondary-300 font-medium rounded-xl p-2.5"
+                    >
+                        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7" />
+                        </svg>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock base_layout %}

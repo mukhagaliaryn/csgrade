@@ -9,6 +9,17 @@
             <div class="flex-1">
                 <div class="flex items-center gap-2">
                     <h2 class="text-2xl font-semibold">{{ exam.title }}</h2>
+                    {% if user.role == "manager" %}
+                        <div class="flex justify-center items-center gap-1 px-2 py-1 text-xs rounded-2xl border border-green-300 bg-green-100 text-green-600">
+                            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd"
+                                    d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span>Ашық емтихан</span>
+                        </div>
+                    {% endif %}
                 </div>
 
                 {% if exam.description %}
@@ -65,15 +76,26 @@
                             Тестілеуге кіру
                         </a>
                     {% else %}
-                        <form method="post" action="{% url 'customer:exam_start' exam.id %}">
-                            {% csrf_token %}
-                            <button
-                                type="submit"
-                                class="w-full flex justify-center text-sm focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl px-5 py-2.5"
+                        {% if user.role == "customer" %}
+                            <form method="post" action="{% url 'customer:exam_start' exam.id %}">
+                                {% csrf_token %}
+                                <button
+                                    type="submit"
+                                    class="w-full flex justify-center text-sm focus:outline-none transition-all text-white bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300 font-medium rounded-xl px-5 py-2.5"
+                                >
+                                    Тестілеуді бастау
+                                </button>
+                            </form>
+                        {% elif user.role == "manager" %}
+                            <a 
+                                href="{% url 'admin:core_exam_change' exam.id %}"
+                                target="_blank"
+                                class="w-full flex justify-center focus:outline-none transition-all text-white cursor-pointer font-medium rounded-xl px-5 py-2.5 bg-primary-600 hover:bg-primary-800 focus:ring-3 focus:ring-primary-300"
                             >
-                                Тестілеуді бастау
-                            </button>
-                        </form>
+                                Өңдеу
+                            </a>
+                        {% endif %}
+                        
                     {% endif %}
 
                     <a 

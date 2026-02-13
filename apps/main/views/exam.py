@@ -20,7 +20,7 @@ def customer_dashboard_view(request):
     recent_attempts = (
         ExamAttempt.objects
         .filter(user=user)
-        .order_by("-finished_at", "-id")[:10]
+        .order_by("-finished_at", "-pk")[:10]
     )
     overall_avg = (
         ExamAttempt.objects
@@ -77,7 +77,7 @@ def customer_dashboard_view(request):
 
 # customer exams page
 # ======================================================================================================================
-@role_required("customer")
+@role_required(["customer", "manager"])
 def customer_exams_view(request):
     user = request.user
     user_has_attempt = ExamAttempt.objects.filter(
@@ -87,7 +87,7 @@ def customer_exams_view(request):
     exams = (
         Exam.objects
         .filter(is_published=True)
-        .order_by("-id")
+        .order_by("-pk")
         .annotate(
             is_registered=Exists(user_has_attempt),
             section_count=Count("sections", distinct=True),
@@ -99,7 +99,7 @@ def customer_exams_view(request):
 
 # customer exam detail page
 # ======================================================================================================================
-@role_required("customer")
+@role_required(["customer", "manager"])
 def customer_exam_detail_view(request, exam_id: int):
     user = request.user
     section_sum_time_sq = (
