@@ -6,6 +6,7 @@ from django.db.models.functions import Cast, NullIf
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_GET
+from openpyxl import Workbook
 
 from apps.main.services.review import _build_review_response
 from core.models import Exam, SectionAttempt, ExamAttempt
@@ -87,20 +88,20 @@ def manager_dashboard_view(request):
         for key, label in SECTION_KEYS
     ]
 
-    # 🔹 CSV Export
-    if export == "csv":
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="exam_attempts.csv"'
-        response.write('\ufeff')
-        writer = csv.writer(response)
-        writer.writerow([
-            "Емтихан нәтижесінің ID нөмері",
-            "Тапсырушы",
+    # 🔹 Excel export
+    if export == "xlsx":
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Емтихан нәтижелері"
+
+        ws.append([
+            "ID",
+            "Студент",
             "Емтихан",
             "Статус",
-            "Баллы",
+            "Жалпы балл",
             "Макс. балл",
-            "Пайыздық көрсеткіш",
+            "Пайыздық көрсеткіші",
             "Басталған уақыты",
             "Аяқталған уақыты",
         ])
@@ -110,17 +111,23 @@ def manager_dashboard_view(request):
             if a.max_total_score:
                 percent = round((a.total_score / a.max_total_score) * 100, 2)
 
-            writer.writerow([
-                a.pk,
+            ws.append([
+                a.id,
                 a.user.username,
                 a.exam.title,
-                a.status,
+                a.get_status_display(),
                 a.total_score,
                 a.max_total_score,
                 percent,
-                a.started_at,
-                a.finished_at,
+                str(a.started_at),
+                str(a.finished_at),
             ])
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="exam_attempts.xlsx"'
+        wb.save(response)
         return response
 
     # 🔹 Pagination
