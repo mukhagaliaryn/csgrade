@@ -91,7 +91,7 @@ def manager_dashboard_view(request):
     if export == "csv":
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="exam_attempts.csv"'
-
+        response.write('\ufeff')
         writer = csv.writer(response)
         writer.writerow([
             "Емтихан нәтижесінің ID нөмері",
