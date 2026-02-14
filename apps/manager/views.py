@@ -113,7 +113,7 @@ def manager_dashboard_view(request):
 
             ws.append([
                 a.id,
-                a.user.username,
+                f'{a.user.first_name} {a.user.last_name}',
                 a.exam.title,
                 a.get_status_display(),
                 a.total_score,
