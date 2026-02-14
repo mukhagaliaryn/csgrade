@@ -6,7 +6,7 @@
 </p>
 <h3 align="center">CSgrade</h3>
 <p align="center">
-    <a href="#" style="font-weight: 600">Ресми сілтеме</a>
+    <a href="https://csgrade.kz" target="_blank" style="font-weight: 600">Ресми сілтеме</a>
 </p>
 
 
