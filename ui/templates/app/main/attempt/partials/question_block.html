@@ -169,14 +169,19 @@
                         method: "POST",
                         body: fd,
                         headers: {
-                            "X-CSRFToken": getCookie("csrftoken"),
-                            "HX-Request": "true"
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "HX-Request": "true"
                         }
                     });
 
                     const html = await res.text();
-                    const wrapper = document.getElementById("question-wrapper");
-                    if (wrapper) wrapper.outerHTML = html;
+                    const old = document.getElementById("question-wrapper");
+                    if (old) old.outerHTML = html;
+
+                    if (window.htmx) {
+                        const nw = document.getElementById("question-wrapper");
+                        if (nw) window.htmx.process(nw);
+                    }
 
                     const pushUrl = res.headers.get("HX-Push-Url");
                     if (pushUrl) history.pushState({}, "", pushUrl);
@@ -265,7 +270,7 @@
                 <div class="text-sm font-medium mb-1">Нәтиже (output) енгізіңіз</div>
                 <textarea 
                     name="output_text" 
-                    class="w-full min-h-27.5 font-mono text-sm border rounded-xl p-3"
+                    class="w-full min-h-27.5 font-mono text-sm border border-border-200 rounded-xl p-3"
                     required
                 >{% if writing_sub %}{{ writing_sub.output_text }}{% endif %}</textarea>
             </div>

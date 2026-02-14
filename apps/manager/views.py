@@ -112,7 +112,7 @@ def manager_dashboard_view(request):
                 percent = round((a.total_score / a.max_total_score) * 100, 2)
 
             ws.append([
-                a.id,
+                a.pk,
                 f'{a.user.first_name} {a.user.last_name}',
                 a.exam.title,
                 a.get_status_display(),
