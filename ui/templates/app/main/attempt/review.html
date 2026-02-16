@@ -128,8 +128,8 @@
         <div class="sticky top-16 z-10 lg:max-w-64 w-full bg-white">
             <div class="space-y-2">
                 {% for s in sections %}
-                    <a
-                        href="{% url review_url_name attempt.id %}?section={{ s.id }}"
+                    <a 
+                        href="{% url review_url_name attempt.id %}?section={{ s.id }}" 
                         class="
                             block px-4 py-2 rounded-xl border
                             {% if current_section and current_section.id == s.id %}
@@ -141,9 +141,7 @@
                     >
                         <div class="flex items-center justify-between">
                             <span>{{ s.get_section_type_display }}</span>
-                            <span class="text-xs opacity-80">
-                                ({% with c=section_q_count|get_item:s.id %}{{ c|default:"0" }}{% endwith %})
-                            </span>
+                            <span class="text-xs opacity-80">({{ s.questions.count }})</span>
                         </div>
                     </a>
                 {% endfor %}
@@ -155,7 +153,6 @@
                 <div class="bg-white border border-border-200 rounded-2xl p-4">
                     <h4 class="text-lg font-semibold">{{ current_section.get_section_type_display }}</h4>
 
-                    {# ✅ Attempt-ке таңдалған материал #}
                     {% if current_material and current_material.text %}
                         <div class="mt-4 whitespace-pre-line">{{ current_material.text|safe }}</div>
                     {% endif %}
@@ -168,36 +165,36 @@
                         </div>
                     {% endif %}
                 </div>
-
                 <div class="space-y-4">
-                    {# ✅ тек Attempt ішіндегі сұрақтар #}
                     {% for qa in current_qas %}
                         {% with q=qa.question %}
                         <div class="border border-border-200 rounded-2xl p-4 bg-white">
                             <div class="grid gap-3">
                                 <h5 class="flex gap-2 items-start font-semibold text-base">
-                                    <span>{{ qa.order }}.</span>
+                                    <span>{{ forloop.counter }}.</span>
                                     <div>{{ q.prompt|safe }}</div>
                                 </h5>
-
-                                {% if mode == "review" %}
-                                    <div class="flex">
-                                        <div class="inline-flex gap-2 justify-center items-center px-4 py-2 rounded-2xl bg-secondary-100">
-                                            <svg class="w-5 h-5 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                                                height="24" fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
-                                            </svg>
-                                            <div class="flex items-center gap-1">
-                                                <span class="font-medium">{{ qa.max_score|floatformat:"0" }}</span>
-                                                <span class="block">/</span>
-                                                <span class="font-medium">{{ qa.score|floatformat:"0" }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endif %}
+                                <div class="flex">
+                                    {% with qa=qa_by_qid|get_item:q.id %}
+                                        {% if qa %}
+                                            {% if mode == "review" %}
+                                                <div class="inline-flex gap-2 justify-center items-center px-4 py-2 rounded-2xl bg-secondary-100">
+                                                    <svg class="w-5 h-5 text-amber-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                                        height="24" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path
+                                                            d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
+                                                    </svg>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="font-medium">{{ qa.max_score|floatformat:"0" }}</span>
+                                                        <span class="block">/</span>
+                                                        <span class="font-medium">{{ qa.score|floatformat:"0" }}</span>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
                             </div>
-
                             <div class="mt-4">
                                 {% if q.question_type == "mcq_single" %}
                                     {% include "./partials/mcq_single.html" %}
@@ -208,7 +205,9 @@
                                 {% elif q.question_type == "writing" %}
                                     {% include "./partials/writing.html" %}
                                 {% else %}
-                                    <div class="text-center text-muted">Бұл сұрақ түрі кейін қосылады.</div>
+                                    <div class="text-center text-muted">
+                                        Бұл сұрақ түрі кейін қосылады.
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>

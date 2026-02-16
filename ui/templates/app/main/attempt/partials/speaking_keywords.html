@@ -1,4 +1,5 @@
-{% with qa=q.qa sa=q.speaking_answer rubric=q.speaking_rubric %}
+{% load dict_extras %}
+{% with sa=speaking_map|get_item:qa.id rubric=q.speaking_rubric %}
 <div class="grid gap-4">
     <!-- Негізгі кілттік сөздер -->
     <div class="rounded-xl border border-border-200 p-4">
@@ -57,13 +58,21 @@
         {% endif %}
     </div>
 
-    {# Табылған кілттік сөздер #}
+    <!-- Табылған кілттік сөздер -->
     <div class="rounded-xl border border-border-200 p-4">
         <div class="text-xs text-muted mb-2">Тапсырушыдан табылған кілттік сөздер</div>
 
         {% if qa.answer_json and qa.answer_json.matched_keywords %}
             <div class="flex flex-wrap gap-2">
                 {% for kw in qa.answer_json.matched_keywords %}
+                    <span class="text-xs px-2 py-1 rounded-full bg-primary-50 text-primary-700 border border-primary-200">
+                        {{ kw }}
+                    </span>
+                {% endfor %}
+            </div>
+        {% elif sa and sa.matched_keywords %}
+            <div class="flex flex-wrap gap-2">
+                {% for kw in sa.matched_keywords %}
                     <span class="text-xs px-2 py-1 rounded-full bg-primary-50 text-primary-700 border border-primary-200">
                         {{ kw }}
                     </span>
