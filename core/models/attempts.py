@@ -76,6 +76,13 @@ class QuestionAttempt(models.Model):
         SectionAttempt, on_delete=models.CASCADE,
         related_name="question_attempts", verbose_name=_("Секция тапсыруы"),
     )
+    section_material = models.ForeignKey(
+        "SectionMaterial",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="question_attempts",
+        verbose_name=_("Таңдалған материал"),
+    )
     question = models.ForeignKey(
         "Question", on_delete=models.CASCADE,
         related_name="attempts", verbose_name=_("Сұрақ"),
@@ -87,10 +94,18 @@ class QuestionAttempt(models.Model):
     is_graded = models.BooleanField(_("Бағаланды"), default=False)
     created_at = models.DateTimeField(_("Құрылған уақыты"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Жаңартылған уақыты"), auto_now=True)
+    order = models.PositiveIntegerField(default=0, db_index=True)
 
     class Meta:
         verbose_name = _("Сұрақ нәтижесі")
         verbose_name_plural = _("Сұрақ нәтижелері")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["section_attempt", "question"],
+                name="uniq_question_per_section_attempt",
+            )
+        ]
+        ordering = ["order", "id"]
 
     def __str__(self):
         return _('#{}-сұрақ нәтижесі').format(self.pk)

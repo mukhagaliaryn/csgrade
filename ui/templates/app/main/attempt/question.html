@@ -28,22 +28,22 @@
 
             <div class="grid gap-4 w-full max-w-4xl mx-auto">
                 <div id="section-material">
-                    {% if current_section and current_section.material %}
+                    {% if current_material %}
                         <div class="border border-border-200 rounded-2xl p-4">
                             <div class="text-lg font-semibold">
                                 {{ current_section.get_section_type_display }}
                             </div>
-                
-                            {% if current_section.material.text %}
+
+                            {% if current_material.text %}
                                 <div class="mt-4 whitespace-pre-line">
-                                    {{ current_section.material.text|safe }}
+                                    {{ current_material.text|safe }}
                                 </div>
                             {% endif %}
-                
-                            {% if current_section.material.audio %}
+
+                            {% if current_material.audio %}
                                 <div class="mt-4">
                                     <audio controls class="w-full">
-                                        <source src="{{ current_section.material.audio.url }}" />
+                                        <source src="{{ current_material.audio.url }}" />
                                     </audio>
                                 </div>
                             {% endif %}
@@ -76,7 +76,7 @@
                             hx-swap="outerHTML"
                         >
                             {% csrf_token %}
-                            <input type="hidden" name="next_qid" value="{{ next_q_id|default:'' }}">
+                            <input type="hidden" name="next_q_id" value="{{ next_q_id|default:'' }}">
                 
                             {% include "app/main/attempt/partials/question_block.html" with q=q selected_set=selected_set qa=qa attempt=attempt %}
                 

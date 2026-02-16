@@ -16,6 +16,7 @@ class SectionInline(LinkedAdminMixin, admin.TabularInline):
     model = Section
     extra = 0
     fields = ("order", "section_type", "max_score", "time_limit", "detail_link", )
+    ordering = ("order", )
     readonly_fields = ("detail_link", )
 
     def detail_link(self, obj):
@@ -42,12 +43,17 @@ class SectionMaterialInline(LinkedAdminMixin, admin.StackedInline):
     model = SectionMaterial
     extra = 0
     form = SectionMaterialAdminForm
+    readonly_fields = ("detail_link", )
+
+    def detail_link(self, obj):
+        return self.admin_link(obj, label=_("Толығырақ"))
+    detail_link.short_description = _("Сілтеме")
 
 
 # QuestionInline
 class QuestionInline(LinkedAdminMixin, admin.TabularInline):
     model = Question
-    fields = ("order", "question_type", "points", "detail_link", )
+    fields = ("order", "section_material",  "question_type", "points", "detail_link", )
     extra = 0
     readonly_fields = ("detail_link", )
 
@@ -67,20 +73,50 @@ class SectionAdmin(LinkedAdminMixin, admin.ModelAdmin):
         return self.parent_link(obj, 'exam')
     exam_link.short_description = _("Емтихан")
 
-    inlines = (SectionMaterialInline, QuestionInline, )
+    inlines = (SectionMaterialInline, QuestionInline)
 
     def get_inline_instances(self, request, obj=None):
-        inline_instances = super().get_inline_instances(request, obj)
         if obj is None:
             return []
 
-        if obj.section_type in (
-                Section.SectionType.LISTENING,
-                Section.SectionType.READING,
-        ):
-            return inline_instances
+        inline_instances = super().get_inline_instances(request, obj)
 
-        return [inl for inl in inline_instances if inl.__class__ is not SectionMaterialInline]
+        if obj.section_type in (
+            Section.SectionType.LISTENING,
+            Section.SectionType.READING,
+        ):
+            return [
+                inl for inl in inline_instances
+                if isinstance(inl, SectionMaterialInline)
+            ]
+
+        if obj.section_type in (
+            Section.SectionType.SPEAKING,
+            Section.SectionType.WRITING,
+        ):
+            return [
+                inl for inl in inline_instances
+                if isinstance(inl, QuestionInline)
+            ]
+
+        return inline_instances
+
+
+# ======================================================================================================================
+# SectionMaterial
+# ======================================================================================================================
+@register(SectionMaterial)
+class SectionMaterialAdmin(LinkedAdminMixin, admin.ModelAdmin):
+    list_display = ("order", "section", "time_limit_seconds", "is_active", )
+    list_filter = ("section", )
+    form = SectionMaterialAdminForm
+    readonly_fields = ("section_link", )
+
+    def section_link(self, obj):
+        return self.parent_link(obj, 'section')
+    section_link.short_description = _("Секция")
+
+    inlines = (QuestionInline, )
 
 
 # ======================================================================================================================
@@ -121,7 +157,7 @@ class QuestionAdmin(LinkedAdminMixin, admin.ModelAdmin):
 
     def section_link(self, obj):
         return self.parent_link(obj, "section")
-    section_link.short_description = _("Емтихан")
+    section_link.short_description = _("Секция")
 
     inlines = (OptionInline, WritingInline, SpeakingRubricInline, )
 

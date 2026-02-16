@@ -53,13 +53,15 @@ class Section(models.Model):
 # SectionMaterial
 # ======================================================================================================================
 class SectionMaterial(models.Model):
-    section = models.OneToOneField(
+    section = models.ForeignKey(
         Section, on_delete=models.CASCADE,
-        related_name="material", verbose_name=_("Секция")
+        related_name="materials", verbose_name=_("Секция")
     )
     text = models.TextField(_("Мәтін"), blank=True, null=True)
     audio = models.FileField(_("Аудиожазба"), upload_to="exams/sounds/", blank=True, null=True)
     time_limit_seconds = models.PositiveSmallIntegerField(_("Уақыты (сек)"), default=0)
+    order = models.PositiveSmallIntegerField(_("Реттілік"), default=1)
+    is_active = models.BooleanField(_("Белсенді"), default=True)
 
     class Meta:
         verbose_name = _("Секция материалы")
@@ -82,6 +84,10 @@ class Question(models.Model):
         Section, on_delete=models.CASCADE,
         related_name="questions", verbose_name=_("Секция")
     )
+    section_material = models.ForeignKey(
+        SectionMaterial, related_name="questions",
+        null=True, blank=True, on_delete=models.CASCADE
+    )
     question_type = models.CharField(_("Сұрақ типі"), max_length=32, choices=QuestionType.choices)
     prompt = models.TextField(_("Берілгені"))
     points = models.PositiveSmallIntegerField(_("Ұпай"), default=1)
@@ -90,20 +96,57 @@ class Question(models.Model):
     def __str__(self):
         return _('#{}-сұрақ').format(self.pk)
 
+    def save(self, *args, **kwargs):
+        if self.section_material_id and not self.section_id:
+            self.section_id = self.section_material.section_id
+        super().save(*args, **kwargs)
+
     def clean(self):
         super().clean()
+
+        st = None
+        if self.section_id:
+            st = self.section.section_type
+
+        elif self.section_material_id:
+            st = self.section_material.section.section_type
+
         allowed = {
-            self.section.SectionType.LISTENING: {self.QuestionType.MCQ_SINGLE, self.QuestionType.MCQ_MULTI},
-            self.section.SectionType.READING:   {self.QuestionType.MCQ_SINGLE, self.QuestionType.MCQ_MULTI},
-            self.section.SectionType.SPEAKING:  {self.QuestionType.SPEAKING_KEYWORDS},
-            self.section.SectionType.WRITING: {self.QuestionType.WRITING},
+            Section.SectionType.LISTENING: {self.QuestionType.MCQ_SINGLE, self.QuestionType.MCQ_MULTI},
+            Section.SectionType.READING:   {self.QuestionType.MCQ_SINGLE, self.QuestionType.MCQ_MULTI},
+            Section.SectionType.SPEAKING:  {self.QuestionType.SPEAKING_KEYWORDS},
+            Section.SectionType.WRITING:   {self.QuestionType.WRITING},
         }
 
-        st = self.section.section_type if self.section.pk else None
         if st and self.question_type and self.question_type not in allowed.get(st, set()):
             raise ValidationError({
                 "question_type": _("Бұл секцияға бұл сұрақ типін қоюға болмайды.")
             })
+
+        if st in (Section.SectionType.READING, Section.SectionType.LISTENING):
+            if not self.section_material_id:
+                raise ValidationError({
+                    "section_material": _("Reading/Listening сұрақтары материалға байланысуы тиіс.")
+                })
+
+            if self.section_material_id and self.section_id:
+                if self.section_material.section_id != self.section_id:
+                    raise ValidationError({
+                        "section_material": _("Материал осы сұрақтың секциясына тиесілі емес.")
+                    })
+
+        elif st in (Section.SectionType.SPEAKING, Section.SectionType.WRITING):
+            if self.section_material_id:
+                raise ValidationError({
+                    "section_material": _("Speaking/Writing сұрақтарына материал байланыстырылмайды.")
+                })
+
+        if self.section_material_id and self.section_id:
+            if self.section_material.section_id != self.section_id:
+                raise ValidationError({
+                    "section": _("SectionMaterial-ға байланған сұрақтың секциясы material.section-пен бірдей болуы керек.")
+                })
+
 
     class Meta:
         verbose_name = _("Сұрақ")
