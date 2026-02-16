@@ -145,7 +145,8 @@ class WritingInline(admin.StackedInline):
 # QuestionAdmin
 @admin.register(Question)
 class QuestionAdmin(LinkedAdminMixin, admin.ModelAdmin):
-    list_display = ("preview", "section", "question_type", "points")
+    list_display = ("pk", "preview", "section", "question_type", "points")
+    list_display_links = ("pk", )
     list_filter = ("question_type", "section__section_type", "section__exam")
     search_fields = ("prompt", "section__exam__title")
     readonly_fields = ("section_link",)
