@@ -95,6 +95,7 @@ class QuestionAttempt(models.Model):
     created_at = models.DateTimeField(_("Құрылған уақыты"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Жаңартылған уақыты"), auto_now=True)
     order = models.PositiveIntegerField(default=0, db_index=True)
+    option_order = models.JSONField(default=list, blank=True)
 
     class Meta:
         verbose_name = _("Сұрақ нәтижесі")

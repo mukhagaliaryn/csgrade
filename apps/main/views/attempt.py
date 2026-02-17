@@ -9,7 +9,7 @@ from core.utils.decorators import role_required
 from django.views.decorators.http import require_GET, require_POST
 from apps.main.services.attempt import ensure_attempt_initialized, save_mcq_answer_only, load_attempt_for_user, \
     is_hx, finish_attempt_auto, build_attempt_question_context, grade_pending_open_questions
-from core.models import AttemptStatus, Question, QuestionAttempt, MCQSelection, SpeakingAnswer, WritingSubmission
+from core.models import AttemptStatus, QuestionAttempt, SpeakingAnswer, WritingSubmission
 
 
 # attempt detail redirect

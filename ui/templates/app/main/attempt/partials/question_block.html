@@ -1,6 +1,6 @@
 {% if q.question_type == "mcq_single" %}
     <div class="space-y-2">
-        {% for opt in q.options.all %}
+        {% for opt in ordered_options %}
             <label
                 class="
                     flex items-start gap-2 px-4 py-2.5 rounded-2xl border border-border-200 cursor-pointer hover:bg-secondary-50 
@@ -21,7 +21,7 @@
 
 {% elif q.question_type == "mcq_multi" %}
     <div class="space-y-2">
-        {% for opt in q.options.all %}
+        {% for opt in ordered_options %}
             <label
                 class="flex items-start gap-3 p-3 rounded-xl border cursor-pointer hover:bg-gray-50 {% if opt.id in selected_set %} bg-gray-50{% endif %}">
                 <input type="checkbox" name="options" value="{{ opt.id }}" {% if opt.id in selected_set %}checked{% endif %}

@@ -141,7 +141,7 @@
                     >
                         <div class="flex items-center justify-between">
                             <span>{{ s.get_section_type_display }}</span>
-                            <span class="text-xs opacity-80">({{ s.questions.count }})</span>
+                            <span class="text-xs opacity-80">({% with c=section_q_count|get_item:s.id %}{{ c|default:"0" }}{% endwith %})</span>
                         </div>
                     </a>
                 {% endfor %}

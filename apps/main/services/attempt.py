@@ -1,5 +1,4 @@
 from decimal import Decimal
-
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Sum
@@ -114,18 +113,38 @@ def ensure_attempt_initialized(attempt: ExamAttempt) -> None:
         return
     s_q = random.choice(speaking_pool)
 
-    writing_pool = list(
-        Question.objects.filter(section=writing_sa.section).order_by("order", "id")
+    writing_pool = Question.objects.filter(
+        section=writing_sa.section,
+        question_type=Question.QuestionType.WRITING
     )
-    if len(writing_pool) < 5:
-        return
-    w_qs = random.sample(writing_pool, k=5)
+    # 5–9 баллдық шаблон
+    TEMPLATE = [5, 6, 7, 8, 9]
+
+    w_qs = []
+    for pts in TEMPLATE:
+        candidates = list(writing_pool.filter(points=pts))
+        if not candidates:
+            return
+
+        w_qs.append(random.choice(candidates))
+
     qa_to_create: list[QuestionAttempt] = []
     order = 1
 
     def add(sa: SectionAttempt, qs: list[Question], mat=None):
         nonlocal order
+
         for q in qs:
+            option_ids = []
+
+            if q.question_type in (
+                    Question.QuestionType.MCQ_SINGLE,
+                    Question.QuestionType.MCQ_MULTI,
+            ):
+                opts = list(q.options.values_list("id", flat=True))
+                random.shuffle(opts)
+                option_ids = opts
+
             qa_to_create.append(
                 QuestionAttempt(
                     section_attempt=sa,
@@ -133,6 +152,7 @@ def ensure_attempt_initialized(attempt: ExamAttempt) -> None:
                     section_material=mat,
                     order=order,
                     max_score=Decimal(str(q.points or 0)),
+                    option_order=option_ids,
                 )
             )
             order += 1
@@ -297,6 +317,11 @@ def build_attempt_question_context(attempt, current_qid: int):
     idx = q_ids.index(current_qid)
     qa = qa_list[idx]
     q = qa.question
+    if qa.option_order:
+        options = list(q.options.filter(id__in=qa.option_order))
+        options.sort(key=lambda o: qa.option_order.index(o.id))
+    else:
+        options = list(q.options.all())
     current_material = qa.section_material
 
     selected_set = set(
@@ -323,6 +348,7 @@ def build_attempt_question_context(attempt, current_qid: int):
         "q_total": len(q_ids),
         "is_last": next_q_id is None,
         "flat_questions": [x.question for x in qa_list],
+        "ordered_options": options
     }
 
 

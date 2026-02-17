@@ -108,7 +108,6 @@ def _build_review_response(request, attempt, review_url_name: str):
         sections_raw,
         key=lambda s: (rank.get(s.section_type, 999), getattr(s, "order", 0), s.id)
     )
-
     ctx = {
         "attempt": attempt,
         "mode": "review",
